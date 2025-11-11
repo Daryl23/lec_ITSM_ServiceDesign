@@ -1,0 +1,2359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Service System Design</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            background: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .content-section {
+            display: none;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: #764ba2;
+            margin: 25px 0 15px 0;
+            font-size: 1.5em;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .flow-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .flow-box:hover {
+            transform: scale(1.05);
+        }
+
+        .arrow {
+            font-size: 2em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .checkpoint {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .checkpoint:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .checkpoint.completed {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        .checkpoint input[type="checkbox"] {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .example-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .example-box strong {
+            color: #856404;
+        }
+
+        .gap-card {
+            background: white;
+            border: 2px solid #667eea;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .gap-card:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            transform: translateY(-3px);
+        }
+
+        .gap-title {
+            font-size: 1.3em;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 30px 0;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .orchestration-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .step-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .step-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .interactive-example {
+            background: #e7f3ff;
+            border: 2px solid #2196F3;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .touchpoint-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .touchpoint-card {
+            background: white;
+            border: 3px solid #667eea;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .touchpoint-card:hover {
+            border-color: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .touchpoint-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .flow-diagram {
+                flex-direction: column;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        /* Drag and Drop Styles */
+        .activity-container {
+            margin: 30px 0;
+        }
+
+        .activity-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .activity-btn {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .activity-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        .activity-btn.selected {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .drag-drop-area {
+            display: flex;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .drag-column {
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .column-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .drop-zone {
+            background: #f8f9fa;
+            border: 3px dashed #667eea;
+            border-radius: 0 0 10px 10px;
+            min-height: 400px;
+            padding: 15px;
+        }
+
+        .drop-zone.drag-over {
+            background: #e7f3ff;
+            border-color: #28a745;
+        }
+
+        .draggable-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+            cursor: move;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            user-select: none;
+        }
+
+        .draggable-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .draggable-item.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        .draggable-item.correct {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .draggable-item.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .draggable-item.excluded {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .item-number {
+            display: none;
+        }
+
+        .item-position {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .activity-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .result-message {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 1.1em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .result-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+
+        .result-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+
+        .result-message.partial {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffc107;
+        }
+
+        .score-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.3em;
+        }
+
+        .company-type-badge {
+            display: inline-block;
+            background: #764ba2;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 IT Service System Design</h1>
+            <p>Interactive Learning Module - Customer Experience & Service Quality</p>
+        </header>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="showTab('overview')">Overview</button>
+            <button class="tab-btn" onclick="showTab('edm')">EDM Model</button>
+            <button class="tab-btn" onclick="showTab('touchpoints')">Touch Points</button>
+            <button class="tab-btn" onclick="showTab('orchestration')">Orchestration</button>
+            <button class="tab-btn" onclick="showTab('gaps')">Value Gaps</button>
+            <button class="tab-btn" onclick="showTab('metrics')">Metrics & SLAs</button>
+            <button class="tab-btn" onclick="showTab('activities')">🎮 Activities</button>
+            <button class="tab-btn" onclick="showTab('tools')">🛠️ Tools</button>
+            <button class="tab-btn" onclick="showTab('casestudy')">📚 Case Study</button>
+            <button class="tab-btn" onclick="showTab('glossary')">📖 Glossary</button>
+        </div>
+
+        <!-- Overview Section -->
+        <div id="overview" class="content-section active">
+            <h2>📊 Course Overview</h2>
+            <p>Welcome to the IT Service System Design interactive guide. Track your progress as you learn about customer experience systems and service quality management.</p>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="overallProgress" style="width: 0%">0%</div>
+            </div>
+
+            <h3>Learning Checkpoints</h3>
+            <div class="checkpoint" onclick="toggleCheckpoint(this)">
+                <input type="checkbox"> Understand the Expectancy-Disconfirmation Model
+            </div>
+            <div class="checkpoint" onclick="toggleCheckpoint(this)">
+                <input type="checkbox"> Identify Touch Points and Moments of Truth
+            </div>
+            <div class="checkpoint" onclick="toggleCheckpoint(this)">
+                <input type="checkbox"> Master Orchestration Core Steps
+            </div>
+            <div class="checkpoint" onclick="toggleCheckpoint(this)">
+                <input type="checkbox"> Recognize Six Service Value Gaps
+            </div>
+            <div class="checkpoint" onclick="toggleCheckpoint(this)">
+                <input type="checkbox"> Apply SLA Metrics and NPS Scoring
+            </div>
+
+            <h3>Key Concepts</h3>
+            <p><strong>Service System Design Success</strong> depends on delivering a unique positive customer experience. This requires understanding customer expectations, designing appropriate touch points, orchestrating resources effectively, and closing value gaps.</p>
+        </div>
+
+        <!-- EDM Section -->
+        <div id="edm" class="content-section">
+            <h2>🎯 Expectancy-Disconfirmation Model (EDM)</h2>
+            <p>The EDM explains customer satisfaction based on the comparison between initial expectations and actual experience.</p>
+
+            <div class="flow-diagram">
+                <div class="flow-box">1. Initial Customer Expectations</div>
+                <span class="arrow">→</span>
+                <div class="flow-box">2. Company Develops Value Proposition</div>
+                <span class="arrow">→</span>
+                <div class="flow-box">3. Customer-Experience System Design</div>
+                <span class="arrow">→</span>
+                <div class="flow-box">4. Shaped Expectations</div>
+                <span class="arrow">→</span>
+                <div class="flow-box">5. Actual Experience (Moment of Truth)</div>
+            </div>
+
+            <div class="example-box">
+                <strong>Real-World Example:</strong><br>
+                A cloud hosting company promises 99.9% uptime in their marketing (shaping expectations). A startup company signs up expecting reliable service. During the first month, they experience only 97% uptime due to server issues. The negative disconfirmation leads to dissatisfaction, complaints, and potential contract cancellation.
+            </div>
+
+            <h3>Three Outcomes</h3>
+            <div class="gap-card">
+                <div class="gap-title">✅ Positive Disconfirmation</div>
+                <p>Experience EXCEEDS expectations → High satisfaction, loyalty, positive reviews</p>
+            </div>
+            <div class="gap-card">
+                <div class="gap-title">➖ Confirmation</div>
+                <p>Experience MEETS expectations → Satisfaction maintained, neutral feedback</p>
+            </div>
+            <div class="gap-card">
+                <div class="gap-title">❌ Negative Disconfirmation</div>
+                <p>Experience FALLS SHORT of expectations → Dissatisfaction, complaints, churn risk</p>
+            </div>
+
+            <h3>Interactive EDM Simulator</h3>
+            <div class="interactive-example">
+                <p><strong>Scenario:</strong> An IT company promises 24/7 support with 2-hour response time.</p>
+                <label>Customer expects response in: <input type="number" id="expected" value="2" style="width: 60px"> hours</label><br>
+                <label>Actual response time: <input type="number" id="actual" value="2" style="width: 60px"> hours</label><br>
+                <button class="btn-primary" onclick="calculateEDM()">Calculate Satisfaction</button>
+                <div id="edmResult" style="margin-top: 15px; font-weight: bold; font-size: 1.2em;"></div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="edmChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Touch Points Section -->
+        <div id="touchpoints" class="content-section">
+            <h2>👆 Touch Points & Moments of Truth</h2>
+            <p>Touch points are customer interactions with a company's value system. Each represents a potential "moment of truth" that shapes customer impressions.</p>
+
+            <div class="touchpoint-grid">
+                <div class="touchpoint-card">
+                    <div class="touchpoint-icon">🛒</div>
+                    <h3>Acquisition Touch Points</h3>
+                    <p><strong>Value-in-Exchange</strong></p>
+                    <p>Learning, comparing, and purchasing decisions</p>
+                    <div class="example-box">
+                        <strong>Example:</strong> Comparing cloud providers based on pricing, features, and setup costs before selecting AWS vs Azure vs Google Cloud
+                    </div>
+                </div>
+
+                <div class="touchpoint-card">
+                    <div class="touchpoint-icon">⚡</div>
+                    <h3>Utilization Touch Points</h3>
+                    <p><strong>Value-in-Use</strong></p>
+                    <p>Experiencing the service/product in action</p>
+                    <div class="example-box">
+                        <strong>Example:</strong> Using the cloud infrastructure daily - uptime, performance, support responsiveness, ease of scaling resources
+                    </div>
+                </div>
+            </div>
+
+            <h3>Two Moments of Truth</h3>
+            <div class="gap-card">
+                <div class="gap-title">🛍️ First Moment (Acquisition)</div>
+                <p>When customer adds service/product to cart or signs contract</p>
+                <p><strong>Example:</strong> IT manager approves annual software license purchase after demo meeting</p>
+            </div>
+            <div class="gap-card">
+                <div class="gap-title">⭐ Second Moment (Experience)</div>
+                <p>When customer actually uses the service and forms satisfaction judgment</p>
+                <p><strong>Example:</strong> Development team uses the software for 3 months and evaluates if it meets productivity goals</p>
+            </div>
+
+            <div class="interactive-example">
+                <h3>Touch Point Impact Assessment</h3>
+                <p>Rate each touch point's impact on your last IT service purchase:</p>
+                <label>Website Experience: <input type="range" min="1" max="10" value="5" id="web" oninput="updateTouchpoint()"> <span id="webVal">5</span></label><br>
+                <label>Sales Interaction: <input type="range" min="1" max="10" value="5" id="sales" oninput="updateTouchpoint()"> <span id="salesVal">5</span></label><br>
+                <label>Onboarding Process: <input type="range" min="1" max="10" value="5" id="onboard" oninput="updateTouchpoint()"> <span id="onboardVal">5</span></label><br>
+                <label>Product Performance: <input type="range" min="1" max="10" value="5" id="perf" oninput="updateTouchpoint()"> <span id="perfVal">5</span></label><br>
+                <label>Support Quality: <input type="range" min="1" max="10" value="5" id="support" oninput="updateTouchpoint()"> <span id="supportVal">5</span></label><br>
+                <div id="touchpointResult" style="margin-top: 15px; font-weight: bold;"></div>
+            </div>
+        </div>
+
+        <!-- Orchestration Section -->
+        <div id="orchestration" class="content-section">
+            <h2>🎼 Orchestration: Bringing Resources Together</h2>
+            <p>No company has all resources needed to meet customer needs alone. Orchestration is the skill of coordinating a network of suppliers, partners, and customers to deliver the value proposition.</p>
+
+            <div class="orchestration-steps">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Selecting Team Members</h3>
+                    <p>Identify right partners with key resources</p>
+                    <p><small>Analytical & Left-Brain Skills</small></p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Assigning Team Roles</h3>
+                    <p>Match skills to responsibilities correctly</p>
+                    <p><small>Strategic Thinking</small></p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Building Team Cohesion</h3>
+                    <p>Create unified working relationships</p>
+                    <p><small>Right-Brain & Creativity Skills</small></p>
+                </div>
+            </div>
+
+            <div class="example-box">
+                <strong>Customer-First Orchestration Example:</strong><br><br>
+                <strong>Scenario:</strong> An enterprise client needs a complete cybersecurity solution.<br><br>
+                <strong>Step 1 - Selecting:</strong> The IT firm identifies they need a firewall vendor, a SIEM software partner, and a security training provider.<br><br>
+                <strong>Step 2 - Assigning:</strong> The firewall vendor handles perimeter security, SIEM partner manages threat detection and logging, training provider educates staff on security awareness.<br><br>
+                <strong>Step 3 - Cohesion:</strong> Regular coordination meetings ensure all partners share incident data, the client receives unified reporting, and everyone works toward the client's security goals - not individual vendor goals.
+            </div>
+
+            <h3>Orchestration Quality Factors</h3>
+            <div class="gap-card">
+                <div class="gap-title">🎯 Company's Orchestration Skills</div>
+                <p>How well the lead company coordinates partners and manages relationships</p>
+            </div>
+            <div class="gap-card">
+                <div class="gap-title">💼 Member Skills & Resources</div>
+                <p>Quality and capabilities each network member brings to the table</p>
+            </div>
+        </div>
+
+        <!-- Value Gaps Section -->
+        <div id="gaps" class="content-section">
+            <h2>⚠️ Six Service Value Gaps</h2>
+            <p>Value gaps are misalignments that cause customer dissatisfaction. Only the customer determines satisfaction - these gaps damage buyer-supplier relationships.</p>
+
+            <div class="gap-card">
+                <div class="gap-title">1️⃣ Knowledge Gap</div>
+                <p><strong>Definition:</strong> Gap between customers' real expectations and provider's perception of those expectations</p>
+                <div class="example-box">
+                    <strong>Example:</strong> A client says "we need faster internet." Provider assumes this means upgrading to fiber and quotes expensive infrastructure changes. Actually, the client just wants to optimize their current network configuration and reduce internal bottlenecks. The provider misunderstood the true need.
+                </div>
+                <p><strong>Solution:</strong> Conduct thorough needs analysis, ask clarifying questions, use customer feedback systems</p>
+            </div>
+
+            <div class="gap-card">
+                <div class="gap-title">2️⃣ Translation/Specification Gap</div>
+                <p><strong>Definition:</strong> Gap when provider focuses on industry standards not aligned with customer's real needs</p>
+                <div class="example-box">
+                    <strong>Example:</strong> A training provider requires all participants to obtain 4 IT certifications before accessing their advanced courses. Small businesses can't afford this and go elsewhere. The strict compliance drives customers away instead of serving their learning needs.
+                </div>
+                <p><strong>Solution:</strong> Translate customer insights into flexible operational standards, offer tiered options</p>
+            </div>
+
+            <div class="gap-card">
+                <div class="gap-title">3️⃣ Performance/Service Delivery Gap</div>
+                <p><strong>Definition:</strong> Poor execution causes actual delivery to fall short of established standards</p>
+                <div class="example-box">
+                    <strong>Example:</strong> Company standard is 98% on-time delivery, but due to understaffing and poor logistics, they only achieve 90%. Customers experience delays despite the company having the right policies on paper.
+                </div>
+                <p><strong>Solution:</strong> Design systems for visibility/traceability, identify and remove root causes of failures, adequate staffing</p>
+            </div>
+
+            <div class="gap-card">
+                <div class="gap-title">4️⃣ Communication Gap</div>
+                <p><strong>Definition:</strong> Company overpromises in marketing but underdelivers in actual service</p>
+                <div class="example-box">
+                    <strong>Example:</strong> An IT support company advertises "24/7 immediate response" but customers only receive replies after 24 hours due to understaffed support team. Marketing promise doesn't match operational reality.
+                </div>
+                <p><strong>Solution:</strong> Align marketing messages with operational capabilities, set realistic expectations</p>
+            </div>
+
+            <div class="gap-card">
+                <div class="gap-title">5️⃣ Perception Gap</div>
+                <p><strong>Definition:</strong> Customers interpret results differently than actual reality</p>
+                <div class="example-box">
+                    <strong>Example:</strong> A cloud provider maintains 99.5% uptime (excellent by industry standards), but customer focuses only on the one recent 2-hour outage during their critical business period. Customer perceives poor reliability despite good overall performance.
+                </div>
+                <p><strong>Solution:</strong> Proactive communication, manage expectations around incidents, provide transparent reporting</p>
+            </div>
+
+            <div class="gap-card">
+                <div class="gap-title">6️⃣ Satisfaction/Service Quality Gap</div>
+                <p><strong>Definition:</strong> Customer expectations and service understanding are not aligned</p>
+                <div class="example-box">
+                    <strong>Example:</strong> Customer expects enterprise-grade features at basic pricing tier. They're disappointed the basic plan doesn't include dedicated support, not realizing this requires premium tier. Misalignment between expectations and service level purchased.
+                </div>
+                <p><strong>Solution:</strong> Constant measurement, active communication, educate customers on service tiers and what's included</p>
+            </div>
+
+            <h3>Gap Impact Assessment</h3>
+            <div class="chart-container">
+                <canvas id="gapChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Metrics Section -->
+        <div id="metrics" class="content-section">
+            <h2>📈 Service Metrics & SLAs</h2>
+            
+            <h3>Service Level Agreement (SLA) Components</h3>
+            <div class="gap-card">
+                <div class="gap-title">Response Time SLA</div>
+                <p>Maximum time to acknowledge and respond to service requests</p>
+                <div class="example-box">
+                    <strong>Example:</strong> Critical issues: 15 minutes | High priority: 2 hours | Normal: 8 hours
+                </div>
+            </div>
+
+            <div class="gap-card">
+                <div class="gap-title">Resolution Time SLA</div>
+                <p>Maximum time to fully resolve issues</p>
+                <div class="example-box">
+                    <strong>Example:</strong> Critical: 4 hours | High: 24 hours | Normal: 72 hours
+                </div>
+            </div>
+
+            <div class="gap-card">
+                <div class="gap-title">Availability SLA</div>
+                <p>Guaranteed uptime percentage</p>
+                <div class="example-box">
+                    <strong>Example:</strong> 99.9% uptime = max 43.2 minutes downtime per month
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="slaChart"></canvas>
+            </div>
+
+            <h3>Net Promoter Score (NPS)</h3>
+            <p>NPS measures customer loyalty by asking: "How likely are you to recommend our service?" (0-10 scale)</p>
+            
+            <div class="touchpoint-grid">
+                <div class="touchpoint-card" style="border-color: #28a745;">
+                    <div class="touchpoint-icon">😊</div>
+                    <h3>Promoters (9-10)</h3>
+                    <p>Loyal enthusiasts who fuel growth</p>
+                </div>
+                <div class="touchpoint-card" style="border-color: #ffc107;">
+                    <div class="touchpoint-icon">😐</div>
+                    <h3>Passives (7-8)</h3>
+                    <p>Satisfied but unenthusiastic</p>
+                </div>
+                <div class="touchpoint-card" style="border-color: #dc3545;">
+                    <div class="touchpoint-icon">😞</div>
+                    <h3>Detractors (0-6)</h3>
+                    <p>Unhappy customers who can damage brand</p>
+                </div>
+            </div>
+
+            <div class="interactive-example">
+                <h3>NPS Calculator</h3>
+                <label>Number of Promoters (9-10): <input type="number" id="promoters" value="50"></label><br>
+                <label>Number of Passives (7-8): <input type="number" id="passives" value="30"></label><br>
+                <label>Number of Detractors (0-6): <input type="number" id="detractors" value="20"></label><br>
+                <button class="btn-primary" onclick="calculateNPS()">Calculate NPS</button>
+                <div id="npsResult" style="margin-top: 15px; font-weight: bold; font-size: 1.2em;"></div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="npsChart"></canvas>
+            </div>
+
+            <h3>Key Performance Indicators (KPIs)</h3>
+            <div class="chart-container">
+                <canvas id="kpiChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Activities Section -->
+        <div id="activities" class="content-section">
+            <h2>🎮 Interactive Activities</h2>
+            <p>Test your understanding with hands-on activities!</p>
+
+            <div class="activity-selector" style="margin-bottom: 40px;">
+                <button class="activity-btn selected" onclick="switchActivityType('edm')">
+                    📋 EDM Ordering<br>
+                    <small>Arrange Steps</small>
+                </button>
+                <button class="activity-btn" onclick="switchActivityType('gaps')">
+                    ⚠️ Value Gap ID<br>
+                    <small>Identify Gaps</small>
+                </button>
+                <button class="activity-btn" onclick="switchActivityType('touchpoints')">
+                    👆 Touch Points<br>
+                    <small>Classify Touch Points</small>
+                </button>
+                <button class="activity-btn" onclick="switchActivityType('orchestration')">
+                    🎼 Orchestration<br>
+                    <small>Match Roles</small>
+                </button>
+            </div>
+
+            <!-- EDM Activity -->
+            <div id="edmActivity" style="display: block;">
+                <h3>EDM Ordering Activity</h3>
+                <p>Arrange scenarios in the correct Expectancy-Disconfirmation Model order. Identify which step should be excluded!</p>
+
+                <div class="activity-container">
+                    <h4>Select a Scenario:</h4>
+                    <div class="activity-selector">
+                        <button class="activity-btn selected" onclick="loadActivity(1)">
+                            Scenario 1<br>
+                            <small>IT Outsourcing</small>
+                        </button>
+                        <button class="activity-btn" onclick="loadActivity(2)">
+                            Scenario 2<br>
+                            <small>BPO Company</small>
+                        </button>
+                        <button class="activity-btn" onclick="loadActivity(3)">
+                            Scenario 3<br>
+                            <small>Managed IT Services</small>
+                        </button>
+                        <button class="activity-btn" onclick="loadActivity(4)">
+                            Scenario 4<br>
+                            <small>Software Development</small>
+                        </button>
+                        <button class="activity-btn" onclick="loadActivity(5)">
+                            Scenario 5<br>
+                            <small>Data Center Services</small>
+                        </button>
+                        <button class="activity-btn" onclick="loadActivity(6)">
+                            Scenario 6<br>
+                            <small>Cybersecurity Services</small>
+                        </button>
+                    </div>
+
+                    <div id="activityContent"></div>
+
+                    <div class="activity-controls">
+                        <button class="btn-primary" onclick="checkAnswer()">✓ Check Answer</button>
+                        <button class="btn-primary" onclick="resetActivity()">↻ Reset</button>
+                        <button class="btn-primary" onclick="showSolution()">💡 Show Solution</button>
+                    </div>
+
+                    <div id="resultMessage"></div>
+                    <div id="scoreDisplay"></div>
+                </div>
+
+                <div class="example-box" style="margin-top: 30px;">
+                    <strong>📚 EDM Process Order:</strong><br>
+                    1. Initial Customer Expectations<br>
+                    2. Company Develops & Communicates Value Proposition<br>
+                    3. Shaped Customer Expectations<br>
+                    4. Company Designs Customer-Experience System<br>
+                    5. Actual Customer Experience (Moment of Truth)<br>
+                    6. Customer Satisfaction/Dissatisfaction Outcome<br>
+                    <br>
+                    <strong>Remember:</strong> Each scenario has 7 steps, but only 6 are valid. One step is irrelevant and should be excluded!
+                </div>
+            </div>
+
+            <!-- Value Gap Activity -->
+            <div id="gapActivity" style="display: none;">
+                <h3>Value Gap Identification Activity</h3>
+                <p>Read each scenario and identify which service value gap is present. Then recommend solutions!</p>
+
+                <div class="activity-container">
+                    <div id="gapScenarios"></div>
+                    
+                    <div class="activity-controls">
+                        <button class="btn-primary" onclick="checkGapAnswers()">✓ Check All Answers</button>
+                        <button class="btn-primary" onclick="resetGapActivity()">↻ Reset</button>
+                    </div>
+
+                    <div id="gapResultMessage"></div>
+                    <div id="gapScoreDisplay"></div>
+                </div>
+
+                <div class="example-box" style="margin-top: 30px;">
+                    <strong>📚 Six Service Value Gaps:</strong><br>
+                    1. <strong>Knowledge Gap</strong> - Provider misunderstands customer expectations<br>
+                    2. <strong>Translation/Specification Gap</strong> - Focus on standards not aligned with needs<br>
+                    3. <strong>Performance/Service Delivery Gap</strong> - Poor execution, standards not met<br>
+                    4. <strong>Communication Gap</strong> - Overpromising and underdelivering<br>
+                    5. <strong>Perception Gap</strong> - Customer interprets results differently than reality<br>
+                    6. <strong>Satisfaction/Service Quality Gap</strong> - Customer expectations not aligned with service understanding
+                </div>
+            </div>
+
+            <!-- Touch Points Activity -->
+            <div id="touchpointsActivity" style="display: none;">
+                <h3>Touch Points Classification Activity</h3>
+                <p>Identify whether each customer interaction is an <strong>Acquisition Touch Point</strong> (value-in-exchange) or <strong>Utilization Touch Point</strong> (value-in-use).</p>
+
+                <div class="activity-container">
+                    <div id="touchpointsScenarios"></div>
+                    
+                    <div class="activity-controls">
+                        <button class="btn-primary" onclick="checkTouchpointsAnswers()">✓ Check All Answers</button>
+                        <button class="btn-primary" onclick="resetTouchpointsActivity()">↻ Reset</button>
+                    </div>
+
+                    <div id="touchpointsResultMessage"></div>
+                    <div id="touchpointsScoreDisplay"></div>
+                </div>
+
+                <div class="example-box" style="margin-top: 30px;">
+                    <strong>📚 Touch Point Types:</strong><br><br>
+                    <strong>🛒 Acquisition Touch Points (Value-in-Exchange):</strong><br>
+                    Interactions that happen as customers learn about services/products and make purchase decisions. Examples: researching, comparing prices, reading reviews, meeting with sales, signing contracts.<br><br>
+                    <strong>⚡ Utilization Touch Points (Value-in-Use):</strong><br>
+                    Interactions that occur as the service is experienced and used. Examples: using the product, receiving support, experiencing performance, renewal decisions based on experience.
+                </div>
+            </div>
+
+            <!-- Orchestration Activity -->
+            <div id="orchestrationActivity" style="display: none;">
+                <h3>Orchestration Role Assignment Activity</h3>
+                <p>Read each scenario and match the correct orchestration step: <strong>Selecting Team Members</strong>, <strong>Assigning Team Roles</strong>, or <strong>Building Team Cohesion</strong>.</p>
+
+                <div class="activity-container">
+                    <div id="orchestrationScenarios"></div>
+                    
+                    <div class="activity-controls">
+                        <button class="btn-primary" onclick="checkOrchestrationAnswers()">✓ Check All Answers</button>
+                        <button class="btn-primary" onclick="resetOrchestrationActivity()">↻ Reset</button>
+                    </div>
+
+                    <div id="orchestrationResultMessage"></div>
+                    <div id="orchestrationScoreDisplay"></div>
+                </div>
+
+                <div class="example-box" style="margin-top: 30px;">
+                    <strong>📚 Three Orchestration Steps:</strong><br><br>
+                    <strong>1️⃣ Selecting Team Members:</strong><br>
+                    Identifying the right partners with key resources to participate. Requires analytical and scanning skills to evaluate who has what you need.<br><br>
+                    <strong>2️⃣ Assigning Team Roles:</strong><br>
+                    Understanding each member's skills to assign the right roles and responsibilities to people with expertise. Strategic thinking to match capabilities to tasks.<br><br>
+                    <strong>3️⃣ Building Team Cohesion:</strong><br>
+                    Creating unified relationships where team members work well together. Requires coaching, collaboration, and creativity skills to build team chemistry.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Activity Data
+        const activities = {
+            1: {
+                title: "IT Outsourcing Company",
+                companyType: "IT Outsourcing Company",
+                steps: [
+                    { id: 1, text: "An IT Outsourcing firm contacted NETconnect Services after seeing a promo on discounted security appliances.", valid: true },
+                    { id: 2, text: "NETconnect Services met with them to clarify which appliances were included in the promo.", valid: true },
+                    { id: 3, text: "They discovered that the firewall model the firm urgently needed was not included in the discount.", valid: true },
+                    { id: 4, text: "The outsourcing team lead expressed frustration, as they expected the firewall to be part of the promo based on the advertisement.", valid: true },
+                    { id: 5, text: "A technician briefly commented about cleaning the server room.", valid: false },
+                    { id: 6, text: "NETconnect Services proposed an alternative offer: a 10% discount for any purchase above ₱70,000 plus free configuration support.", valid: true },
+                    { id: 7, text: "After recalculating, the outsourcing firm accepted the alternative offer — excluding the firewall model not covered in the promo.", valid: true }
+                ],
+                correctOrder: [1, 2, 3, 4, 6, 7],
+                excluded: 5
+            },
+            2: {
+                title: "BPO (Business Process Outsourcing) Company",
+                companyType: "BPO Company",
+                steps: [
+                    { id: 1, text: "A BPO call center contacted TechFlow Solutions after seeing a discount for bulk-purchase headsets online.", valid: true },
+                    { id: 2, text: "TechFlow reviewed the promo details with the BPO's IT supervisor to verify included models.", valid: true },
+                    { id: 3, text: "They learned that the noise-cancelling headset model the BPO needed was not part of the promo.", valid: true },
+                    { id: 4, text: "The IT supervisor remembered they left their coffee mug at home.", valid: false },
+                    { id: 5, text: "TechFlow Solutions presented an alternative: if the BPO purchased above ₱45,000, they would receive a 12% discount on eligible accessories.", valid: true },
+                    { id: 6, text: "The supervisor realized they could still meet the budget by shifting to compatible accessories.", valid: true },
+                    { id: 7, text: "The BPO approved the alternative offer — excluding the noise-cancelling headset model from the promo.", valid: true }
+                ],
+                correctOrder: [1, 2, 3, 5, 6, 7],
+                excluded: 4
+            },
+            3: {
+                title: "Managed IT Services Provider",
+                companyType: "Other IT Services (Managed IT Services Provider)",
+                steps: [
+                    { id: 1, text: "A Managed IT Services Provider contacted CloudBridge Systems expecting discounts on backup servers advertised in a mid-year promo.", valid: true },
+                    { id: 2, text: "CloudBridge met with their procurement officer to validate the promo's included products.", valid: true },
+                    { id: 3, text: "It was confirmed that the high-capacity backup server they wanted was not part of the discounted items.", valid: true },
+                    { id: 4, text: "The procurement officer was disappointed since the budget assumption relied on that discount.", valid: true },
+                    { id: 5, text: "CloudBridge Systems offered an alternative deal: a discount on storage expansion modules for purchases above ₱60,000.", valid: true },
+                    { id: 6, text: "A staff member asked when their team meeting would start.", valid: false },
+                    { id: 7, text: "After reviewing calculations, the Managed IT Services provider accepted the alternative offer — excluding the backup server from the promo.", valid: true }
+                ],
+                correctOrder: [1, 2, 3, 4, 5, 7],
+                excluded: 6
+            },
+            4: {
+                title: "Software Development Firm",
+                companyType: "IT Services – Software Development",
+                steps: [
+                    { id: 1, text: "A software development firm reached out to DataCore Solutions after noticing a promo on discounted testing servers.", valid: true },
+                    { id: 2, text: "DataCore met with the firm's IT lead to confirm which server models were included in the promo.", valid: true },
+                    { id: 3, text: "A developer mentioned they needed to refill the office printer ink.", valid: false },
+                    { id: 4, text: "It was revealed that the high-performance testing server the firm needed was not part of the promo.", valid: true },
+                    { id: 5, text: "DataCore proposed an alternative: any purchase above ₱80,000 would receive a 10% discount and free setup assistance.", valid: true },
+                    { id: 6, text: "The IT lead recalculated and realized the alternative still fit within their project budget.", valid: true },
+                    { id: 7, text: "The software firm accepted the revised offer — excluding the testing server not included in the promo.", valid: true }
+                ],
+                correctOrder: [1, 2, 4, 5, 6, 7],
+                excluded: 3
+            },
+            5: {
+                title: "Data Center / Co-Location Services Provider",
+                companyType: "IT Infrastructure Services",
+                steps: [
+                    { id: 1, text: "A data center provider contacted FiberTech Networks after seeing an ad for discounted enterprise switches.", valid: true },
+                    { id: 2, text: "FiberTech reviewed the promo with them to verify item eligibility.", valid: true },
+                    { id: 3, text: "They discovered that the 40GbE switch the data center needed was not included in the promo.", valid: true },
+                    { id: 4, text: "The purchasing officer was disappointed because the discount was expected to cover that specific model.", valid: true },
+                    { id: 5, text: "FiberTech offered an alternative: a 15% discount for power supplies and rack accessories if purchases exceeded ₱65,000.", valid: true },
+                    { id: 6, text: "The officer found that the alternative discount could offset part of the original plan's cost.", valid: true },
+                    { id: 7, text: "Someone from the team asked about the snack delivery schedule.", valid: false }
+                ],
+                correctOrder: [1, 2, 3, 4, 5, 6],
+                excluded: 7
+            },
+            6: {
+                title: "Cybersecurity Services Company",
+                companyType: "IT Security Services",
+                steps: [
+                    { id: 1, text: "A cybersecurity company contacted SecureLink Technologies after seeing a promo for discounted encryption appliances.", valid: true },
+                    { id: 2, text: "A security analyst commented about updating their ID badge.", valid: false },
+                    { id: 3, text: "SecureLink clarified that the specific encryption appliance they required was not covered by the promo.", valid: true },
+                    { id: 4, text: "The company's security manager felt discouraged, as the discount was a key factor in the planned purchase.", valid: true },
+                    { id: 5, text: "SecureLink proposed an alternative discount: 12% off related security modules if the order exceeded ₱50,000.", valid: true },
+                    { id: 6, text: "The security manager calculated the totals and realized the alternative still aligned with the department's quarterly budget.", valid: true },
+                    { id: 7, text: "They accepted the offer — excluding the encryption appliance not included in the promo.", valid: true }
+                ],
+                correctOrder: [1, 3, 4, 5, 6, 7],
+                excluded: 2
+            }
+        };
+
+        let currentActivity = 1;
+        let userScore = 0;
+        let currentActivityType = 'edm';
+
+        // Touch Points scenarios data
+        const touchpointsScenarios = [
+            {
+                id: 1,
+                scenario: "A company's IT manager browses through cloud service provider websites, comparing features, pricing models, and reading customer testimonials to decide which vendor to choose.",
+                correctType: "Acquisition",
+                explanation: "This is an Acquisition Touch Point (value-in-exchange). The IT manager is in the learning and comparison phase before making a purchase decision. They haven't bought or used the service yet.",
+                momentOfTruth: "This represents activities leading up to the First Moment of Truth (when they'll make the purchase decision)."
+            },
+            {
+                id: 2,
+                scenario: "After purchasing a network monitoring tool, the IT team uses it daily to track bandwidth usage, detect network issues, and receive automated alerts about potential problems.",
+                correctType: "Utilization",
+                explanation: "This is a Utilization Touch Point (value-in-use). The team is actively experiencing and using the service they purchased. Their satisfaction is being formed based on actual performance.",
+                momentOfTruth: "This represents the Second Moment of Truth where actual service experience shapes customer satisfaction."
+            },
+            {
+                id: 3,
+                scenario: "A business attends a vendor demo session where a cybersecurity company showcases their threat detection system, explains implementation timelines, and provides a quote for their services.",
+                correctType: "Acquisition",
+                explanation: "This is an Acquisition Touch Point (value-in-exchange). The business is in the evaluation and decision-making phase, learning about the product before purchase. No service has been delivered yet.",
+                momentOfTruth: "This is part of the journey toward the First Moment of Truth (deciding to purchase)."
+            },
+            {
+                id: 4,
+                scenario: "A company contacts technical support because their software application keeps crashing. The support team troubleshoots the issue and resolves it within 2 hours.",
+                correctType: "Utilization",
+                explanation: "This is a Utilization Touch Point (value-in-use). The customer is experiencing the service (support) as part of their ongoing relationship with the provider. This interaction affects their perception of service quality.",
+                momentOfTruth: "This is the Second Moment of Truth - how well support responds impacts customer satisfaction and retention."
+            },
+            {
+                id: 5,
+                scenario: "An IT director reviews proposals from three different managed service providers, analyzes their SLA commitments, and negotiates contract terms before selecting a vendor.",
+                correctType: "Acquisition",
+                explanation: "This is an Acquisition Touch Point (value-in-exchange). The director is in the comparative analysis and negotiation phase of the purchase process. The service hasn't been delivered yet.",
+                momentOfTruth: "These activities precede the First Moment of Truth when the contract is signed."
+            },
+            {
+                id: 6,
+                scenario: "A development team experiences the speed and reliability of their new cloud hosting service, noticing that deployment times have decreased from 30 minutes to 5 minutes.",
+                correctType: "Utilization",
+                explanation: "This is a Utilization Touch Point (value-in-use). The team is experiencing the actual performance benefits of the service they purchased. Their satisfaction is based on real usage outcomes.",
+                momentOfTruth: "This is the Second Moment of Truth where actual performance either meets or fails to meet expectations."
+            },
+            {
+                id: 7,
+                scenario: "A small business owner reads online reviews, checks pricing on the vendor's website, and calls to ask questions about installation fees for a new phone system.",
+                correctType: "Acquisition",
+                explanation: "This is an Acquisition Touch Point (value-in-exchange). The owner is gathering information, comparing options, and clarifying costs before making a purchase decision.",
+                momentOfTruth: "These research activities lead up to the First Moment of Truth (deciding to buy)."
+            },
+            {
+                id: 8,
+                scenario: "After one year of service, a client evaluates whether to renew their IT support contract based on response times, issue resolution quality, and overall satisfaction with the service received.",
+                correctType: "Utilization",
+                explanation: "This is a Utilization Touch Point (value-in-use). The renewal decision is based on the actual experience of using the service over time. Past performance determines future purchase decisions.",
+                momentOfTruth: "This is an extended Second Moment of Truth where accumulated service experiences influence the re-purchase decision."
+            },
+            {
+                id: 9,
+                scenario: "A purchasing team receives presentations from four different software vendors, each demonstrating their products and explaining licensing models during a vendor selection process.",
+                correctType: "Acquisition",
+                explanation: "This is an Acquisition Touch Point (value-in-exchange). The team is in the evaluation phase, learning about different options before making a purchase commitment.",
+                momentOfTruth: "These presentations are part of the journey to the First Moment of Truth (vendor selection)."
+            },
+            {
+                id: 10,
+                scenario: "A company's employees use their new collaboration platform daily for video meetings, file sharing, and project management, discovering features and forming opinions about its effectiveness.",
+                correctType: "Utilization",
+                explanation: "This is a Utilization Touch Point (value-in-use). Employees are actively experiencing the service and forming satisfaction judgments based on actual daily usage and feature discovery.",
+                momentOfTruth: "This is the Second Moment of Truth where real usage experience shapes perceptions and satisfaction levels."
+            }
+        ];
+
+        // Orchestration scenarios data
+        const orchestrationScenarios = [
+            {
+                id: 1,
+                scenario: "A managed service provider analyzes potential partners and identifies that they need a firewall vendor with Fortinet expertise, a SIEM provider with 24/7 monitoring capabilities, and a training company specializing in security awareness programs.",
+                correctStep: "Selecting Team Members",
+                explanation: "This demonstrates Selecting Team Members - the core step of identifying who has the key resources and capabilities needed. The MSP is scanning the market and evaluating which partners possess the specific skills required.",
+                skills: "This requires analytical and left-brain skills to assess capabilities and compare potential partners."
+            },
+            {
+                id: 2,
+                scenario: "An IT project manager holds weekly coordination meetings where the cloud hosting provider, database administrator, and application developer discuss dependencies, share progress updates, and resolve conflicts to ensure everyone works toward the client's goals.",
+                correctStep: "Building Team Cohesion",
+                explanation: "This demonstrates Building Team Cohesion - creating unified relationships through regular communication and conflict resolution. The manager is coaching different members to work together effectively.",
+                skills: "This requires right-brain collaboration and creativity skills to foster team chemistry and united purpose."
+            },
+            {
+                id: 3,
+                scenario: "After selecting partners, the project lead determines that the hardware vendor will handle infrastructure setup, the software vendor will manage application configuration, and the training provider will conduct end-user education sessions.",
+                correctStep: "Assigning Team Roles",
+                explanation: "This demonstrates Assigning Team Roles - matching each partner's expertise to specific responsibilities. The lead understands each member's capabilities and assigns appropriate tasks accordingly.",
+                skills: "This requires strategic thinking to correctly align skills with responsibilities."
+            },
+            {
+                id: 4,
+                scenario: "A systems integrator evaluates dozens of potential subcontractors, comparing their certifications, past project experience, geographic coverage, and technical specializations to determine which ones to invite to the project.",
+                correctStep: "Selecting Team Members",
+                explanation: "This demonstrates Selecting Team Members - extensive scanning and comparative evaluation to identify the right partners. The integrator is in the analysis phase of determining who has what's needed.",
+                skills: "This requires strong analytical capabilities to evaluate and compare multiple candidates against project requirements."
+            },
+            {
+                id: 5,
+                scenario: "To improve collaboration, a project director organizes team-building activities, establishes shared communication channels, creates a unified project dashboard, and implements regular sync meetings to ensure all vendors work as one cohesive unit.",
+                correctStep: "Building Team Cohesion",
+                explanation: "This demonstrates Building Team Cohesion - investing in team chemistry through activities, shared tools, and regular interaction. The director is actively fostering unity and collaboration.",
+                skills: "This requires creativity and collaboration skills to design activities and systems that bring diverse members together."
+            },
+            {
+                id: 6,
+                scenario: "A consulting firm designates the network specialist to handle all connectivity issues, assigns the security expert to focus on firewall configurations, and tasks the database administrator with all data-related responsibilities based on their individual expertise.",
+                correctStep: "Assigning Team Roles",
+                explanation: "This demonstrates Assigning Team Roles - understanding each member's specific expertise and assigning roles that match their capabilities. Clear responsibility allocation based on skills.",
+                skills: "This requires understanding of team member capabilities and strategic role assignment."
+            },
+            {
+                id: 7,
+                scenario: "An IT director researches potential partners and creates a shortlist by evaluating which companies have experience with healthcare IT compliance, which have 24/7 support capabilities, and which have proven track records in EHR implementations.",
+                correctStep: "Selecting Team Members",
+                explanation: "This demonstrates Selecting Team Members - identifying and evaluating partners based on specific required capabilities. The director is in the research and assessment phase of team formation.",
+                skills: "This requires analytical scanning skills to identify and evaluate potential partners against specific criteria."
+            },
+            {
+                id: 8,
+                scenario: "A project manager establishes clear communication protocols, defines escalation paths, creates incentive structures for collaborative problem-solving, and mediates conflicts to ensure the vendor network functions smoothly together.",
+                correctStep: "Building Team Cohesion",
+                explanation: "This demonstrates Building Team Cohesion - creating structures and processes that enable unified teamwork. The manager coaches members on working together and resolves interpersonal challenges.",
+                skills: "This requires coaching and right-brain collaboration skills to establish harmonious working relationships."
+            },
+            {
+                id: 9,
+                scenario: "After onboarding partners, the program lead clarifies that Partner A owns customer-facing communication, Partner B handles backend infrastructure, Partner C manages data migration, and Partner D provides training - each aligned to their core strengths.",
+                correctStep: "Assigning Team Roles",
+                explanation: "This demonstrates Assigning Team Roles - clearly defining responsibilities for each partner based on their strengths. Each member gets tasks that match their expertise.",
+                skills: "This demonstrates strategic thinking in matching organizational strengths to specific project needs."
+            },
+            {
+                id: 10,
+                scenario: "A solution architect identifies gaps in the current vendor network and searches for a storage provider with petabyte-scale capacity, a backup vendor with ransomware recovery expertise, and a monitoring service with AI-driven analytics capabilities.",
+                correctStep: "Selecting Team Members",
+                explanation: "This demonstrates Selecting Team Members - identifying needed resources and searching for partners who possess those specific capabilities. The architect is scanning for the right expertise.",
+                skills: "This requires analytical assessment skills to identify capability gaps and find partners to fill them."
+            }
+        ];
+
+        // Gap scenarios data
+        const gapScenarios = [
+            {
+                id: 1,
+                scenario: "An internet provider fails to resolve an Internet cabling problem in less than three (3) days. In contrast, they could fix the same issue in under two (2) days when the household experienced the same a month ago. The household issued report tickets.",
+                correctGap: "Performance/Service Delivery Gap",
+                explanation: "The household's expectation was based on past service performance (issue resolved in under 2 days). When the same issue took longer (3+ days), the provider delivered below expected service level, creating dissatisfaction.",
+                solutions: [
+                    "Improve turnaround consistency by reviewing technician scheduling, workload, and routing",
+                    "Implement a priority system for recurring or unresolved issues",
+                    "Provide real-time updates to customers through SMS or a mobile app",
+                    "Offer service recovery (e.g., bill discount or additional data) to restore trust"
+                ]
+            },
+            {
+                id: 2,
+                scenario: "A startup networking company in a rural town only accepts clients with over 100 employees. In their first two (2) months, they could only book business with one (1) company.",
+                correctGap: "Knowledge Gap",
+                explanation: "The company misunderstands the local market. In a rural town, most businesses have fewer than 100 employees, yet the company assumes large-client demand exists. Management does not correctly perceive customer needs.",
+                solutions: [
+                    "Conduct market research to understand actual business sizes and service demand",
+                    "Adjust client eligibility to include small and medium businesses",
+                    "Create flexible service tiers suitable for micro, small, medium, and large enterprises",
+                    "Reevaluate target market strategy to match the conditions of the rural environment"
+                ]
+            },
+            {
+                id: 3,
+                scenario: "An online IT support business always misses giving feedback forms when providing service. It affected future clients with concerns about completion time and payment transactions.",
+                correctGap: "Performance/Service Delivery Gap",
+                explanation: "The business intends to collect feedback but fails in execution. The absence of feedback results in unclear expectations for new clients, unresolved complaints, and confusion about turnaround time and payment processes.",
+                solutions: [
+                    "Automate feedback form distribution via email or service-ticket closure",
+                    "Integrate feedback collection directly into the workflow or CRM system",
+                    "Assign responsibility to a staff member to monitor follow-through",
+                    "Use the feedback gathered to improve timelines, communication, and transaction clarity"
+                ]
+            },
+            {
+                id: 4,
+                scenario: "A cloud hosting provider advertises '99.99% uptime guarantee' in all their marketing materials. However, customers experience frequent downtime averaging 99.5% uptime. The technical team confirms they're meeting industry standards, but customers feel misled.",
+                correctGap: "Communication Gap",
+                explanation: "The company overpromises in marketing (99.99%) but delivers less (99.5%). Even though 99.5% is good by industry standards, the gap between advertised promise and actual delivery creates customer dissatisfaction.",
+                solutions: [
+                    "Align marketing claims with actual operational capabilities",
+                    "Advertise realistic SLA levels that can be consistently met",
+                    "Provide transparent uptime reports to customers",
+                    "If higher SLA is needed, invest in infrastructure improvements first before advertising"
+                ]
+            },
+            {
+                id: 5,
+                scenario: "An IT training center requires all participants to obtain ITIL, CompTIA A+, Network+, and Security+ certifications before they can enroll in advanced cybersecurity courses. Many interested professionals cannot afford the prerequisites and choose other training providers.",
+                correctGap: "Translation/Specification Gap",
+                explanation: "The training center focuses too rigidly on industry standards (certifications) that aren't aligned with customers' real needs or financial capacity. This strict compliance drives potential customers away.",
+                solutions: [
+                    "Offer flexible prerequisite options or equivalency assessments",
+                    "Create bundled certification packages at discounted rates",
+                    "Provide scholarship or installment payment options",
+                    "Design tiered courses where basics can be learned without all certifications"
+                ]
+            },
+            {
+                id: 6,
+                scenario: "A software company provides excellent service throughout the year with 98% customer satisfaction. However, during the last service call, a technician arrived 2 hours late without notification. Now the client is considering switching providers despite the historically good service.",
+                correctGap: "Perception Gap",
+                explanation: "The customer interprets recent experience (late arrival) more heavily than the overall performance (98% satisfaction). One negative incident disproportionately affects their perception of service quality.",
+                solutions: [
+                    "Implement proactive communication for any delays or issues",
+                    "Provide service recovery immediately after negative incidents",
+                    "Send regular reminders of positive service history and achievements",
+                    "Create feedback loops after every service to address concerns before they escalate"
+                ]
+            },
+            {
+                id: 7,
+                scenario: "A managed service provider (MSP) offers three service tiers: Basic, Professional, and Enterprise. A small business purchases the Basic tier expecting 24/7 phone support. When they call at night, they discover Basic only includes email support during business hours. They're upset because they thought all tiers included phone support.",
+                correctGap: "Satisfaction/Service Quality Gap",
+                explanation: "Customer expectations and service understanding are not aligned. The customer expected features (24/7 phone support) that aren't included in their purchased tier. This misalignment between expectations and actual service level causes dissatisfaction.",
+                solutions: [
+                    "Provide clear, detailed comparison charts of all service tiers during sales process",
+                    "Have customers acknowledge understanding of their tier's limitations before purchase",
+                    "Implement constant measurement and active communication about service inclusions",
+                    "Offer upgrade paths when customers need features outside their tier"
+                ]
+            },
+            {
+                id: 8,
+                scenario: "A cybersecurity firm's sales team promises clients that their new threat detection system will 'eliminate all cyber threats within 24 hours of implementation.' However, the technical team knows it takes 2-3 weeks to properly configure and tune the system for each client's unique environment.",
+                correctGap: "Communication Gap",
+                explanation: "The company overpromises through sales (eliminate threats in 24 hours) but the reality is 2-3 weeks for proper implementation. Marketing and sales claims don't match operational capabilities, setting unrealistic expectations.",
+                solutions: [
+                    "Align sales messaging with technical reality and implementation timelines",
+                    "Create standardized onboarding materials that set realistic expectations",
+                    "Implement sales-technical team alignment meetings before client promises",
+                    "Develop phased implementation roadmaps to show clients the realistic timeline"
+                ]
+            },
+            {
+                id: 9,
+                scenario: "A data center provider believes their clients want cutting-edge technology and invests millions in the latest quantum-ready infrastructure. However, their client base consists mainly of small regional banks who actually need simple, reliable backup solutions and compliance certifications, not advanced technology.",
+                correctGap: "Knowledge Gap",
+                explanation: "The provider misunderstands what customers truly want. Management assumed clients wanted advanced technology when they actually needed reliability and compliance. The gap exists between customers' real expectations (basic reliability) and provider's perception (cutting-edge tech).",
+                solutions: [
+                    "Conduct regular customer surveys and needs assessments",
+                    "Implement voice-of-customer programs to understand true needs",
+                    "Analyze purchasing patterns and service utilization data",
+                    "Create customer advisory boards for direct feedback on investment priorities"
+                ]
+            },
+            {
+                id: 10,
+                scenario: "An IT consulting firm has a written policy that all support tickets should be resolved within 4 hours. However, due to understaffing and high workload, the actual average resolution time is 12 hours. The policy exists on paper but isn't being achieved in practice.",
+                correctGap: "Performance/Service Delivery Gap",
+                explanation: "Standards are set appropriately (4-hour resolution policy) but poor execution prevents meeting those standards. The gap exists between established service standards and actual delivery due to resource constraints.",
+                solutions: [
+                    "Hire additional support staff or redistribute workload",
+                    "Implement ticket prioritization and triage systems",
+                    "Use automation tools for common issues to reduce workload",
+                    "Set realistic standards that match current capacity or increase capacity to meet standards"
+                ]
+            },
+            {
+                id: 11,
+                scenario: "A network equipment vendor requires all customers to have their technical staff complete a 40-hour certification course before they'll provide warranty support. Many small businesses can't spare staff for a full week of training and purchase from competitors instead.",
+                correctGap: "Translation/Specification Gap",
+                explanation: "The vendor focuses on industry-standard certification requirements that don't align with small business customer needs. The rigid adherence to training standards (40 hours) isn't practical for the customer base, driving them to competitors.",
+                solutions: [
+                    "Offer flexible training formats (online, self-paced, modular)",
+                    "Create abbreviated training options for basic support qualification",
+                    "Provide alternative qualification methods like competency assessments",
+                    "Offer tiered support where basic issues don't require certification"
+                ]
+            },
+            {
+                id: 12,
+                scenario: "An enterprise software company delivers a project exactly as specified in the contract with all features working correctly. However, the client is unhappy because they assumed certain advanced reporting features would be included, even though these were never discussed or documented. The client rates the project as unsatisfactory.",
+                correctGap: "Perception Gap",
+                explanation: "The service was delivered correctly according to specifications, but the customer's perception differs from reality. The client made assumptions about included features that weren't part of the agreement, causing dissatisfaction despite technically correct delivery.",
+                solutions: [
+                    "Document all inclusions AND exclusions clearly in proposals",
+                    "Use detailed discovery sessions to uncover unstated expectations",
+                    "Implement regular check-ins during projects to verify alignment",
+                    "Provide demos of planned deliverables before final development to confirm understanding"
+                ]
+            }
+        ];
+
+        // Switch between activity types
+        function switchActivityType(type) {
+            currentActivityType = type;
+            
+            const edmActivity = document.getElementById('edmActivity');
+            const gapActivity = document.getElementById('gapActivity');
+            const touchpointsActivity = document.getElementById('touchpointsActivity');
+            const orchestrationActivity = document.getElementById('orchestrationActivity');
+            const buttons = document.querySelectorAll('#activities > .activity-selector > .activity-btn');
+            
+            // Hide all activities
+            edmActivity.style.display = 'none';
+            gapActivity.style.display = 'none';
+            touchpointsActivity.style.display = 'none';
+            orchestrationActivity.style.display = 'none';
+            
+            // Remove selected class from all buttons
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            
+            if (type === 'edm') {
+                edmActivity.style.display = 'block';
+                buttons[0].classList.add('selected');
+                loadActivity(1);
+            } else if (type === 'gaps') {
+                gapActivity.style.display = 'block';
+                buttons[1].classList.add('selected');
+                loadGapActivity();
+            } else if (type === 'touchpoints') {
+                touchpointsActivity.style.display = 'block';
+                buttons[2].classList.add('selected');
+                loadTouchpointsActivity();
+            } else if (type === 'orchestration') {
+                orchestrationActivity.style.display = 'block';
+                buttons[3].classList.add('selected');
+                loadOrchestrationActivity();
+            }
+        }
+
+        // Tab Navigation
+        function showTab(tabId) {
+            const sections = document.querySelectorAll('.content-section');
+            const buttons = document.querySelectorAll('.tab-btn');
+            
+            sections.forEach(section => section.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Checkpoint Management
+        function toggleCheckpoint(element) {
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                element.classList.add('completed');
+            } else {
+                element.classList.remove('completed');
+            }
+            
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('.checkpoint input[type="checkbox"]');
+            const completed = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const total = checkboxes.length;
+            const percentage = (completed / total) * 100;
+            
+            const progressBar = document.getElementById('overallProgress');
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = Math.round(percentage) + '%';
+        }
+
+        // EDM Calculator
+        function calculateEDM() {
+            const expected = parseFloat(document.getElementById('expected').value);
+            const actual = parseFloat(document.getElementById('actual').value);
+            const result = document.getElementById('edmResult');
+            
+            if (actual < expected) {
+                result.innerHTML = '✅ <span style="color: #28a745">POSITIVE DISCONFIRMATION</span><br>Experience exceeded expectations! Customer is highly satisfied.';
+            } else if (actual === expected) {
+                result.innerHTML = '➖ <span style="color: #ffc107">CONFIRMATION</span><br>Experience met expectations. Customer is satisfied.';
+            } else {
+                result.innerHTML = '❌ <span style="color: #dc3545">NEGATIVE DISCONFIRMATION</span><br>Experience fell short of expectations. Customer is dissatisfied.';
+            }
+        }
+
+        // Touch Point Calculator
+        function updateTouchpoint() {
+            document.getElementById('webVal').textContent = document.getElementById('web').value;
+            document.getElementById('salesVal').textContent = document.getElementById('sales').value;
+            document.getElementById('onboardVal').textContent = document.getElementById('onboard').value;
+            document.getElementById('perfVal').textContent = document.getElementById('perf').value;
+            document.getElementById('supportVal').textContent = document.getElementById('support').value;
+            
+            const web = parseInt(document.getElementById('web').value);
+            const sales = parseInt(document.getElementById('sales').value);
+            const onboard = parseInt(document.getElementById('onboard').value);
+            const perf = parseInt(document.getElementById('perf').value);
+            const support = parseInt(document.getElementById('support').value);
+            
+            const avg = (web + sales + onboard + perf + support) / 5;
+            const result = document.getElementById('touchpointResult');
+            
+            if (avg >= 8) {
+                result.innerHTML = '⭐ <span style="color: #28a745">EXCELLENT</span> - Overall touch point experience: ' + avg.toFixed(1) + '/10<br>Strong customer satisfaction across all interactions!';
+            } else if (avg >= 6) {
+                result.innerHTML = '👍 <span style="color: #ffc107">GOOD</span> - Overall touch point experience: ' + avg.toFixed(1) + '/10<br>Satisfactory but room for improvement.';
+            } else {
+                result.innerHTML = '⚠️ <span style="color: #dc3545">NEEDS IMPROVEMENT</span> - Overall touch point experience: ' + avg.toFixed(1) + '/10<br>Critical touch points need attention.';
+            }
+        }
+
+        // NPS Calculator
+        function calculateNPS() {
+            const promoters = parseInt(document.getElementById('promoters').value);
+            const passives = parseInt(document.getElementById('passives').value);
+            const detractors = parseInt(document.getElementById('detractors').value);
+            const total = promoters + passives + detractors;
+            
+            const promoterPercent = (promoters / total) * 100;
+            const detractorPercent = (detractors / total) * 100;
+            const nps = promoterPercent - detractorPercent;
+            
+            const result = document.getElementById('npsResult');
+            let color, status;
+            
+            if (nps >= 70) {
+                color = '#28a745';
+                status = 'EXCELLENT';
+            } else if (nps >= 50) {
+                color = '#5cb85c';
+                status = 'VERY GOOD';
+            } else if (nps >= 30) {
+                color = '#ffc107';
+                status = 'GOOD';
+            } else if (nps >= 0) {
+                color = '#ff9800';
+                status = 'NEEDS IMPROVEMENT';
+            } else {
+                color = '#dc3545';
+                status = 'CRITICAL';
+            }
+            
+            result.innerHTML = `NPS Score: <span style="color: ${color}; font-size: 1.5em">${nps.toFixed(1)}</span><br>Status: ${status}`;
+            
+            // Update NPS Chart
+            updateNPSChart(promoters, passives, detractors);
+        }
+
+        // Chart Initialization
+        function initCharts() {
+            // EDM Chart
+            const edmCtx = document.getElementById('edmChart').getContext('2d');
+            new Chart(edmCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Positive Disconfirmation', 'Confirmation', 'Negative Disconfirmation'],
+                    datasets: [{
+                        label: 'Customer Satisfaction Level',
+                        data: [9, 7, 3],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.8)',
+                            'rgba(255, 193, 7, 0.8)',
+                            'rgba(220, 53, 69, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(40, 167, 69, 1)',
+                            'rgba(255, 193, 7, 1)',
+                            'rgba(220, 53, 69, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Expectancy-Disconfirmation Model Outcomes',
+                            font: { size: 18 }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            title: {
+                                display: true,
+                                text: 'Satisfaction Score (1-10)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Gap Impact Chart
+            const gapCtx = document.getElementById('gapChart').getContext('2d');
+            new Chart(gapCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Knowledge Gap', 'Translation Gap', 'Performance Gap', 'Communication Gap', 'Perception Gap', 'Service Quality Gap'],
+                    datasets: [{
+                        label: 'Impact on Customer Satisfaction',
+                        data: [8, 7, 9, 8.5, 7.5, 8],
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(118, 75, 162, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(118, 75, 162, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Service Value Gaps - Impact Analysis',
+                            font: { size: 18 }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10,
+                            ticks: {
+                                stepSize: 2
+                            }
+                        }
+                    }
+                }
+            });
+
+            // SLA Performance Chart
+            const slaCtx = document.getElementById('slaChart').getContext('2d');
+            new Chart(slaCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        {
+                            label: 'Response Time SLA (%)',
+                            data: [95, 97, 96, 98, 99, 98.5],
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Resolution Time SLA (%)',
+                            data: [92, 94, 95, 96, 97, 96.5],
+                            borderColor: 'rgba(118, 75, 162, 1)',
+                            backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Target (98%)',
+                            data: [98, 98, 98, 98, 98, 98],
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'SLA Performance Tracking (6 Months)',
+                            font: { size: 18 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 90,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'SLA Achievement (%)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Initial NPS Chart
+            const npsCtx = document.getElementById('npsChart').getContext('2d');
+            window.npsChartInstance = new Chart(npsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Promoters', 'Passives', 'Detractors'],
+                    datasets: [{
+                        data: [50, 30, 20],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.8)',
+                            'rgba(255, 193, 7, 0.8)',
+                            'rgba(220, 53, 69, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(40, 167, 69, 1)',
+                            'rgba(255, 193, 7, 1)',
+                            'rgba(220, 53, 69, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Net Promoter Score Distribution',
+                            font: { size: 18 }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // KPI Dashboard Chart
+            const kpiCtx = document.getElementById('kpiChart').getContext('2d');
+            new Chart(kpiCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['First Response Time', 'Ticket Resolution', 'Customer Satisfaction', 'System Uptime', 'SLA Compliance'],
+                    datasets: [{
+                        label: 'Current Performance',
+                        data: [87, 92, 85, 99.5, 96],
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: 'Target',
+                        data: [90, 95, 90, 99.9, 98],
+                        backgroundColor: 'rgba(40, 167, 69, 0.5)',
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Key Performance Indicators Dashboard',
+                            font: { size: 18 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Performance (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateNPSChart(promoters, passives, detractors) {
+            window.npsChartInstance.data.datasets[0].data = [promoters, passives, detractors];
+            window.npsChartInstance.update();
+        }
+
+        // Activity Functions
+        function loadActivity(activityNum) {
+            currentActivity = activityNum;
+            const activity = activities[activityNum];
+            
+            // Update button states
+            document.querySelectorAll('.activity-btn').forEach((btn, index) => {
+                btn.classList.toggle('selected', index + 1 === activityNum);
+            });
+            
+            // Clear results
+            document.getElementById('resultMessage').innerHTML = '';
+            document.getElementById('scoreDisplay').innerHTML = '';
+            
+            // Shuffle steps for randomization
+            const shuffledSteps = [...activity.steps].sort(() => Math.random() - 0.5);
+            
+            const html = `
+                <h3>${activity.title}</h3>
+                <div class="company-type-badge">${activity.companyType}</div>
+                
+                <div class="drag-drop-area">
+                    <div class="drag-column">
+                        <div class="column-title">📋 Available Steps</div>
+                        <div class="drop-zone" id="sourceZone" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                            ${shuffledSteps.map(step => `
+                                <div class="draggable-item" draggable="true" ondragstart="drag(event)" data-id="${step.id}" data-valid="${step.valid}">
+                                    ${step.text}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="drag-column">
+                        <div class="column-title">✅ Correct Order (6 steps)</div>
+                        <div class="drop-zone" id="targetZone" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                            <p style="text-align: center; color: #6c757d; padding: 20px;">Drag the 6 valid steps here in the correct EDM order</p>
+                        </div>
+                    </div>
+                    
+                    <div class="drag-column">
+                        <div class="column-title">❌ Excluded Step (1 step)</div>
+                        <div class="drop-zone" id="excludedZone" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                            <p style="text-align: center; color: #6c757d; padding: 20px;">Drag the irrelevant step here</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('activityContent').innerHTML = html;
+        }
+
+        function drag(event) {
+            event.dataTransfer.setData("text", event.target.dataset.id);
+            event.target.classList.add('dragging');
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('drag-over');
+        }
+
+        function dragLeave(event) {
+            event.currentTarget.classList.remove('drag-over');
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('drag-over');
+            
+            const itemId = event.dataTransfer.getData("text");
+            const draggedElement = document.querySelector(`[data-id="${itemId}"]`);
+            
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+                
+                // Remove placeholder text if exists
+                const placeholder = event.currentTarget.querySelector('p');
+                if (placeholder) {
+                    placeholder.remove();
+                }
+                
+                // Append to new zone
+                event.currentTarget.appendChild(draggedElement);
+            }
+        }
+
+        function checkAnswer() {
+            const activity = activities[currentActivity];
+            const targetZone = document.getElementById('targetZone');
+            const excludedZone = document.getElementById('excludedZone');
+            
+            // Get user's order
+            const userOrder = Array.from(targetZone.querySelectorAll('.draggable-item'))
+                .map(item => parseInt(item.dataset.id));
+            
+            // Get excluded step
+            const userExcluded = excludedZone.querySelector('.draggable-item');
+            const excludedId = userExcluded ? parseInt(userExcluded.dataset.id) : null;
+            
+            // Check if correct
+            const orderCorrect = JSON.stringify(userOrder) === JSON.stringify(activity.correctOrder);
+            const excludedCorrect = excludedId === activity.excluded;
+            
+            // Add position numbers and visual feedback
+            targetZone.querySelectorAll('.draggable-item').forEach((item, index) => {
+                // Remove old position number if exists
+                const oldPos = item.querySelector('.item-position');
+                if (oldPos) oldPos.remove();
+                
+                // Add position number
+                const posSpan = document.createElement('span');
+                posSpan.className = 'item-position';
+                posSpan.textContent = index + 1;
+                item.insertBefore(posSpan, item.firstChild);
+                
+                const itemId = parseInt(item.dataset.id);
+                if (itemId === activity.correctOrder[index]) {
+                    item.classList.add('correct');
+                    item.classList.remove('incorrect');
+                } else {
+                    item.classList.add('incorrect');
+                    item.classList.remove('correct');
+                }
+            });
+            
+            if (userExcluded) {
+                if (excludedCorrect) {
+                    userExcluded.classList.add('excluded');
+                    userExcluded.classList.remove('incorrect');
+                } else {
+                    userExcluded.classList.add('incorrect');
+                    userExcluded.classList.remove('excluded');
+                }
+            }
+            
+            // Calculate score
+            let correctSteps = 0;
+            userOrder.forEach((id, index) => {
+                if (id === activity.correctOrder[index]) correctSteps++;
+            });
+            
+            const orderScore = (correctSteps / activity.correctOrder.length) * 100;
+            const excludedScore = excludedCorrect ? 100 : 0;
+            const totalScore = (orderScore * 0.7 + excludedScore * 0.3).toFixed(1);
+            
+            // Build detailed explanation
+            let explanationHTML = '<div style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 8px; border: 2px solid #2196F3;">';
+            explanationHTML += '<strong>📖 Explanation:</strong><br><br>';
+            
+            // Explain each step mapping to EDM
+            const edmStages = [
+                "Initial Customer Expectations",
+                "Company Develops & Communicates Value Proposition",
+                "Shaped Customer Expectations",
+                "Company Designs Customer-Experience System",
+                "Actual Customer Experience (Moment of Truth)",
+                "Customer Satisfaction/Dissatisfaction Outcome"
+            ];
+            
+            activity.correctOrder.forEach((stepId, index) => {
+                const step = activity.steps.find(s => s.id === stepId);
+                const userStepId = userOrder[index];
+                const isCorrect = stepId === userStepId;
+                const icon = isCorrect ? '✓' : '✗';
+                const color = isCorrect ? '#155724' : '#721c24';
+                
+                explanationHTML += `<strong style="color: ${color};">${icon} Position ${index + 1} - ${edmStages[index]}:</strong><br>`;
+                explanationHTML += `${step.text}<br><br>`;
+            });
+            
+            const excludedStep = activity.steps.find(s => s.id === activity.excluded);
+            explanationHTML += `<strong style="color: #856404;">⚠ Excluded (Irrelevant) Step:</strong><br>`;
+            explanationHTML += `${excludedStep.text}<br>`;
+            explanationHTML += `<em>This step is irrelevant to the customer service transaction and doesn't fit the EDM process.</em>`;
+            explanationHTML += '</div>';
+            
+            // Display result
+            const resultDiv = document.getElementById('resultMessage');
+            const scoreDiv = document.getElementById('scoreDisplay');
+            
+            if (orderCorrect && excludedCorrect) {
+                resultDiv.innerHTML = `
+                    <div class="result-message success">
+                        🎉 Perfect! You got the correct order and identified the excluded step!
+                    </div>
+                    ${explanationHTML}
+                `;
+            } else if (orderCorrect && !excludedCorrect) {
+                resultDiv.innerHTML = `
+                    <div class="result-message partial">
+                        👍 Good! Order is correct, but check the excluded step.
+                    </div>
+                    ${explanationHTML}
+                `;
+            } else if (!orderCorrect && excludedCorrect) {
+                resultDiv.innerHTML = `
+                    <div class="result-message partial">
+                        👍 Excluded step is correct! Review the EDM process order.
+                    </div>
+                    ${explanationHTML}
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="result-message error">
+                        ❌ Not quite right. Review the EDM model and try again!
+                    </div>
+                    ${explanationHTML}
+                `;
+            }
+            
+            scoreDiv.innerHTML = `
+                <div class="score-display">
+                    Score: ${totalScore}%
+                    <br><small>Order: ${correctSteps}/${activity.correctOrder.length} correct | Excluded: ${excludedCorrect ? '✓' : '✗'}</small>
+                </div>
+            `;
+            
+            userScore = totalScore;
+        }
+
+        function resetActivity() {
+            loadActivity(currentActivity);
+        }
+
+        function showSolution() {
+            const activity = activities[currentActivity];
+            const resultDiv = document.getElementById('resultMessage');
+            
+            resultDiv.innerHTML = `
+                <div class="result-message" style="background: #e7f3ff; color: #004085; border-color: #2196F3;">
+                    <strong>💡 Solution:</strong><br><br>
+                    <strong>Correct Order:</strong><br>
+                    ${activity.correctOrder.map((id, index) => {
+                        const step = activity.steps.find(s => s.id === id);
+                        return `${index + 1}. ${step.text}`;
+                    }).join('<br>')}<br><br>
+                    <strong>Excluded Step:</strong><br>
+                    ${activity.steps.find(s => s.id === activity.excluded).text}
+                </div>
+            `;
+        }
+
+        // Gap Activity Functions
+        function loadGapActivity() {
+            const html = gapScenarios.map(scenario => `
+                <div class="gap-card" style="margin: 25px 0;">
+                    <div class="gap-title">Scenario ${scenario.id}</div>
+                    <p style="margin: 15px 0; line-height: 1.8;">${scenario.scenario}</p>
+                    
+                    <div style="margin: 20px 0;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: bold;">Select the Value Gap:</label>
+                        <select id="gap-select-${scenario.id}" style="width: 100%; padding: 10px; border: 2px solid #667eea; border-radius: 5px; font-size: 16px;">
+                            <option value="">-- Select a gap --</option>
+                            <option value="Knowledge Gap">Knowledge Gap</option>
+                            <option value="Translation/Specification Gap">Translation/Specification Gap</option>
+                            <option value="Performance/Service Delivery Gap">Performance/Service Delivery Gap</option>
+                            <option value="Communication Gap">Communication Gap</option>
+                            <option value="Perception Gap">Perception Gap</option>
+                            <option value="Satisfaction/Service Quality Gap">Satisfaction/Service Quality Gap</option>
+                        </select>
+                    </div>
+                    
+                    <div id="gap-feedback-${scenario.id}" style="margin-top: 15px;"></div>
+                </div>
+            `).join('');
+            
+            document.getElementById('gapScenarios').innerHTML = html;
+        }
+
+        function checkGapAnswers() {
+            let correctCount = 0;
+            const total = gapScenarios.length;
+            
+            gapScenarios.forEach(scenario => {
+                const select = document.getElementById(`gap-select-${scenario.id}`);
+                const feedback = document.getElementById(`gap-feedback-${scenario.id}`);
+                const userAnswer = select.value;
+                
+                if (userAnswer === scenario.correctGap) {
+                    correctCount++;
+                    feedback.innerHTML = `
+                        <div style="background: #d4edda; padding: 15px; border-radius: 8px; border: 2px solid #28a745;">
+                            <strong style="color: #155724;">✓ Correct!</strong><br>
+                            <strong>Explanation:</strong> ${scenario.explanation}<br><br>
+                            <strong>Recommended Solutions:</strong>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                ${scenario.solutions.map(sol => `<li>${sol}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                    select.style.borderColor = '#28a745';
+                } else if (userAnswer === '') {
+                    feedback.innerHTML = `
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 2px solid #ffc107;">
+                            <strong style="color: #856404;">⚠ Please select an answer</strong>
+                        </div>
+                    `;
+                    select.style.borderColor = '#ffc107';
+                } else {
+                    feedback.innerHTML = `
+                        <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border: 2px solid #dc3545;">
+                            <strong style="color: #721c24;">✗ Incorrect</strong><br>
+                            The correct answer is: <strong>${scenario.correctGap}</strong><br><br>
+                            <strong>Explanation:</strong> ${scenario.explanation}<br><br>
+                            <strong>Recommended Solutions:</strong>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                ${scenario.solutions.map(sol => `<li>${sol}`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                    select.style.borderColor = '#dc3545';
+                }
+            });
+            
+            const percentage = (correctCount / total * 100).toFixed(1);
+            const resultDiv = document.getElementById('gapResultMessage');
+            const scoreDiv = document.getElementById('gapScoreDisplay');
+            
+            if (correctCount === total) {
+                resultDiv.innerHTML = `
+                    <div class="result-message success">
+                        🎉 Perfect! You identified all value gaps correctly!
+                    </div>
+                `;
+            } else if (correctCount >= total * 0.7) {
+                resultDiv.innerHTML = `
+                    <div class="result-message partial">
+                        👍 Good job! You got most of them right. Review the incorrect ones.
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="result-message error">
+                        📚 Keep learning! Review the value gap definitions and try again.
+                    </div>
+                `;
+            }
+            
+            scoreDiv.innerHTML = `
+                <div class="score-display">
+                    Score: ${percentage}%
+                    <br><small>${correctCount} out of ${total} correct</small>
+                </div>
+            `;
+        }
+
+        function resetGapActivity() {
+            gapScenarios.forEach(scenario => {
+                const select = document.getElementById(`gap-select-${scenario.id}`);
+                const feedback = document.getElementById(`gap-feedback-${scenario.id}`);
+                select.value = '';
+                select.style.borderColor = '#667eea';
+                feedback.innerHTML = '';
+            });
+            
+            document.getElementById('gapResultMessage').innerHTML = '';
+            document.getElementById('gapScoreDisplay').innerHTML = '';
+        }
+
+        // Touch Points Activity Functions
+        function loadTouchpointsActivity() {
+            const html = touchpointsScenarios.map(scenario => `
+                <div class="gap-card" style="margin: 25px 0;">
+                    <div class="gap-title">Scenario ${scenario.id}</div>
+                    <p style="margin: 15px 0; line-height: 1.8;">${scenario.scenario}</p>
+                    
+                    <div style="margin: 20px 0;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: bold;">Touch Point Type:</label>
+                        <select id="touchpoint-select-${scenario.id}" style="width: 100%; padding: 10px; border: 2px solid #667eea; border-radius: 5px; font-size: 16px;">
+                            <option value="">-- Select type --</option>
+                            <option value="Acquisition">Acquisition Touch Point (Value-in-Exchange)</option>
+                            <option value="Utilization">Utilization Touch Point (Value-in-Use)</option>
+                        </select>
+                    </div>
+                    
+                    <div id="touchpoint-feedback-${scenario.id}" style="margin-top: 15px;"></div>
+                </div>
+            `).join('');
+            
+            document.getElementById('touchpointsScenarios').innerHTML = html;
+        }
+
+        function checkTouchpointsAnswers() {
+            let correctCount = 0;
+            const total = touchpointsScenarios.length;
+            
+            touchpointsScenarios.forEach(scenario => {
+                const select = document.getElementById(`touchpoint-select-${scenario.id}`);
+                const feedback = document.getElementById(`touchpoint-feedback-${scenario.id}`);
+                const userAnswer = select.value;
+                
+                if (userAnswer === scenario.correctType) {
+                    correctCount++;
+                    feedback.innerHTML = `
+                        <div style="background: #d4edda; padding: 15px; border-radius: 8px; border: 2px solid #28a745;">
+                            <strong style="color: #155724;">✓ Correct! ${scenario.correctType} Touch Point</strong><br><br>
+                            <strong>Explanation:</strong> ${scenario.explanation}<br><br>
+                            <strong>Moment of Truth:</strong> ${scenario.momentOfTruth}
+                        </div>
+                    `;
+                    select.style.borderColor = '#28a745';
+                } else if (userAnswer === '') {
+                    feedback.innerHTML = `
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 2px solid #ffc107;">
+                            <strong style="color: #856404;">⚠ Please select an answer</strong>
+                        </div>
+                    `;
+                    select.style.borderColor = '#ffc107';
+                } else {
+                    feedback.innerHTML = `
+                        <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border: 2px solid #dc3545;">
+                            <strong style="color: #721c24;">✗ Incorrect</strong><br>
+                            The correct answer is: <strong>${scenario.correctType} Touch Point</strong><br><br>
+                            <strong>Explanation:</strong> ${scenario.explanation}<br><br>
+                            <strong>Moment of Truth:</strong> ${scenario.momentOfTruth}
+                        </div>
+                    `;
+                    select.style.borderColor = '#dc3545';
+                }
+            });
+            
+            const percentage = (correctCount / total * 100).toFixed(1);
+            const resultDiv = document.getElementById('touchpointsResultMessage');
+            const scoreDiv = document.getElementById('touchpointsScoreDisplay');
+            
+            if (correctCount === total) {
+                resultDiv.innerHTML = `
+                    <div class="result-message success">
+                        🎉 Perfect! You correctly identified all touch points!
+                    </div>
+                `;
+            } else if (correctCount >= total * 0.7) {
+                resultDiv.innerHTML = `
+                    <div class="result-message partial">
+                        👍 Good job! You got most of them right. Review the incorrect ones.
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="result-message error">
+                        📚 Keep learning! Review touch point definitions and try again.
+                    </div>
+                `;
+            }
+            
+            scoreDiv.innerHTML = `
+                <div class="score-display">
+                    Score: ${percentage}%
+                    <br><small>${correctCount} out of ${total} correct</small>
+                </div>
+            `;
+        }
+
+        function resetTouchpointsActivity() {
+            touchpointsScenarios.forEach(scenario => {
+                const select = document.getElementById(`touchpoint-select-${scenario.id}`);
+                const feedback = document.getElementById(`touchpoint-feedback-${scenario.id}`);
+                select.value = '';
+                select.style.borderColor = '#667eea';
+                feedback.innerHTML = '';
+            });
+            
+            document.getElementById('touchpointsResultMessage').innerHTML = '';
+            document.getElementById('touchpointsScoreDisplay').innerHTML = '';
+        }
+
+        // Orchestration Activity Functions
+        function loadOrchestrationActivity() {
+            const html = orchestrationScenarios.map(scenario => `
+                <div class="gap-card" style="margin: 25px 0;">
+                    <div class="gap-title">Scenario ${scenario.id}</div>
+                    <p style="margin: 15px 0; line-height: 1.8;">${scenario.scenario}</p>
+                    
+                    <div style="margin: 20px 0;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: bold;">Orchestration Step:</label>
+                        <select id="orchestration-select-${scenario.id}" style="width: 100%; padding: 10px; border: 2px solid #667eea; border-radius: 5px; font-size: 16px;">
+                            <option value="">-- Select step --</option>
+                            <option value="Selecting Team Members">Selecting Team Members</option>
+                            <option value="Assigning Team Roles">Assigning Team Roles</option>
+                            <option value="Building Team Cohesion">Building Team Cohesion</option>
+                        </select>
+                    </div>
+                    
+                    <div id="orchestration-feedback-${scenario.id}" style="margin-top: 15px;"></div>
+                </div>
+            `).join('');
+            
+            document.getElementById('orchestrationScenarios').innerHTML = html;
+        }
+
+        function checkOrchestrationAnswers() {
+            let correctCount = 0;
+            const total = orchestrationScenarios.length;
+            
+            orchestrationScenarios.forEach(scenario => {
+                const select = document.getElementById(`orchestration-select-${scenario.id}`);
+                const feedback = document.getElementById(`orchestration-feedback-${scenario.id}`);
+                const userAnswer = select.value;
+                
+                if (userAnswer === scenario.correctStep) {
+                    correctCount++;
+                    feedback.innerHTML = `
+                        <div style="background: #d4edda; padding: 15px; border-radius: 8px; border: 2px solid #28a745;">
+                            <strong style="color: #155724;">✓ Correct! ${scenario.correctStep}</strong><br><br>
+                            <strong>Explanation:</strong> ${scenario.explanation}<br><br>
+                            <strong>Skills Required:</strong> ${scenario.skills}
+                        </div>
+                    `;
+                    select.style.borderColor = '#28a745';
+                } else if (userAnswer === '') {
+                    feedback.innerHTML = `
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 2px solid #ffc107;">
+                            <strong style="color: #856404;">⚠ Please select an answer</strong>
+                        </div>
+                    `;
+                    select.style.borderColor = '#ffc107';
+                } else {
+                    feedback.innerHTML = `
+                        <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border: 2px solid #dc3545;">
+                            <strong style="color: #721c24;">✗ Incorrect</strong><br>
+                            The correct answer is: <strong>${scenario.correctStep}</strong><br><br>
+                            <strong>Explanation:</strong> ${scenario.explanation}<br><br>
+                            <strong>Skills Required:</strong> ${scenario.skills}
+                        </div>
+                    `;
+                    select.style.borderColor = '#dc3545';
+                }
+            });
+            
+            const percentage = (correctCount / total * 100).toFixed(1);
+            const resultDiv = document.getElementById('orchestrationResultMessage');
+            const scoreDiv = document.getElementById('orchestrationScoreDisplay');
+            
+            if (correctCount === total) {
+                resultDiv.innerHTML = `
+                    <div class="result-message success">
+                        🎉 Perfect! You correctly identified all orchestration steps!
+                    </div>
+                `;
+            } else if (correctCount >= total * 0.7) {
+                resultDiv.innerHTML = `
+                    <div class="result-message partial">
+                        👍 Good job! You got most of them right. Review the incorrect ones.
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="result-message error">
+                        📚 Keep learning! Review orchestration steps and try again.
+                    </div>
+                `;
+            }
+            
+            scoreDiv.innerHTML = `
+                <div class="score-display">
+                    Score: ${percentage}%
+                    <br><small>${correctCount} out of ${total} correct</small>
+                </div>
+            `;
+        }
+
+        function resetOrchestrationActivity() {
+            orchestrationScenarios.forEach(scenario => {
+                const select = document.getElementById(`orchestration-select-${scenario.id}`);
+                const feedback = document.getElementById(`orchestration-feedback-${scenario.id}`);
+                select.value = '';
+                select.style.borderColor = '#667eea';
+                feedback.innerHTML = '';
+            });
+            
+            document.getElementById('orchestrationResultMessage').innerHTML = '';
+            document.getElementById('orchestrationScoreDisplay').innerHTML = '';
+        }
+
+        // Initialize everything when page loads
+        window.onload = function() {
+            initCharts();
+            updateProgress();
+            loadActivity(1);
+        };
+    </script>
+</body>
+</html>
